@@ -1,15 +1,13 @@
+package com.gc.spark.sql.example
+
 /**
  * Created by ganeshchand on 7/22/15.
  */
 
 import java.io.File
 
-import org.apache.spark.SparkConf
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.SQLContext._
-
-import scala.tools.nsc.classpath.FileUtils
 
 object AggDataFrame {
   def main(args: Array[String]) {
@@ -58,12 +56,25 @@ object AggDataFrame {
     println(s"Total Transaction for Customer Id 1 :$transCount")
 
 
-    val query =
+    val ddl =
       """
         |CREATE TEMPORARY TABLE customer
         |USING com.databricks.spark.csv
         |OPTIONS (path
       """.stripMargin.replace("\n", " ")
+
+
+    /** Register as Table and Query **/
+    df.registerTempTable("sales")
+    val query =
+      """
+        |SELECT COUNT(*)
+        |FROM sales
+        |WHERE transactionId like '%11%' AND customerId == "1"
+      """.stripMargin
+
+    val custCount = sQLContext.sql(query).collect().head.getLong(0)
+    println(s"There are $custCount customers that have TransactionID as %11%")
   }
 
 }
